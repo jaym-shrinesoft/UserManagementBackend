@@ -35,10 +35,10 @@ public class UsersController {
 
     @PostMapping("/create")
     public String saveUsers(@RequestBody Users user){
-//        final String s = user.getPassword();
-//        final byte[] authBytes = s.getBytes(StandardCharsets.UTF_8);
-//        final String encoded = Base64.getEncoder().encodeToString(authBytes);
-//        user.setPassword(encoded);
+        final String s = user.getPassword();
+        final byte[] authBytes = s.getBytes(StandardCharsets.UTF_8);
+        final String encoded = Base64.getEncoder().encodeToString(authBytes);
+        user.setPassword(encoded);
 
         try{
             Users userEntity = usersService.saveUser(user);
@@ -52,7 +52,7 @@ public class UsersController {
             return String.valueOf(userEntity.getId());
         }
         catch(Exception e){
-            return "Duplicate "+ e.getMessage();
+            return "Duplicate";
         }
     }
 
