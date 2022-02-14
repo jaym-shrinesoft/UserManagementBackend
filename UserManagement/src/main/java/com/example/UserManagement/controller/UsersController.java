@@ -35,24 +35,25 @@ public class UsersController {
 
     @PostMapping("/create")
     public String saveUsers(@RequestBody Users user){
-        final String s = user.getPassword();
-        final byte[] authBytes = s.getBytes(StandardCharsets.UTF_8);
-        final String encoded = Base64.getEncoder().encodeToString(authBytes);
-        user.setPassword(encoded);
-        final String mailBody = "Hello " + user.getUserName() + ",\n" +
-                "Your activation link is: http://localhost:3000/createpassword/"+user.getUserName();
-        MailModel mailModel = new MailModel();
-        mailModel.setTo(user.getEmailAddress());
-        mailModel.setSubject("Account varification for "+ user.getUserName());
-        mailModel.setBody(mailBody);
+//        final String s = user.getPassword();
+//        final byte[] authBytes = s.getBytes(StandardCharsets.UTF_8);
+//        final String encoded = Base64.getEncoder().encodeToString(authBytes);
+//        user.setPassword(encoded);
+
         try{
-            usersService.saveUser(user);
+            Users userEntity = usersService.saveUser(user);
+            final String mailBody = "Hello " + user.getUserName() + ",<br/>" +
+                    "Your activation link is: http://localhost:3000/createpassword/"+userEntity.getId();
+            MailModel mailModel = new MailModel();
+            mailModel.setTo(user.getEmailAddress());
+            mailModel.setSubject("Account varification for "+ user.getUserName());
+            mailModel.setBody(mailBody);
             mailSender.sendMail(mailModel);
+            return String.valueOf(userEntity.getId());
         }
         catch(Exception e){
             return "Duplicate "+ e.getMessage();
         }
-        return "New user is added";
     }
 
     @PostMapping("/login")
