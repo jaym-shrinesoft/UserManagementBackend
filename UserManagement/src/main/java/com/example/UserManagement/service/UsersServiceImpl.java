@@ -37,4 +37,9 @@ public class UsersServiceImpl implements UsersService{
     {
         return userRepository.findById(id).get();
     }
+
+    @Override
+    public List<Users> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
 }

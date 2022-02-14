@@ -10,4 +10,5 @@ public interface UsersService {
     public void deleteUser(Long userId);
     public List<Users> findByEmailandPassword(Users user);
     public Users getUserById(Long id);
+    public List<Users> getUserByUsername(String username);
 }

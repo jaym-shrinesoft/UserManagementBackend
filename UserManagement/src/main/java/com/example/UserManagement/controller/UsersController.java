@@ -1,5 +1,7 @@
 package com.example.UserManagement.controller;
 
+import com.example.UserManagement.mail.MailSender;
+import com.example.UserManagement.model.MailModel;
 import com.example.UserManagement.model.Role;
 import com.example.UserManagement.model.Users;
 import com.example.UserManagement.service.UsersService;
@@ -18,7 +20,7 @@ public class UsersController {
     private UsersService usersService;
 
     @Autowired
-    private EmailUtility emailUtility;
+    private MailSender mailSender;
 
     @GetMapping("/getAll")
     public List<Users> getAllUsers(){
@@ -37,12 +39,18 @@ public class UsersController {
         final byte[] authBytes = s.getBytes(StandardCharsets.UTF_8);
         final String encoded = Base64.getEncoder().encodeToString(authBytes);
         user.setPassword(encoded);
+        final String mailBody = "Hello " + user.getUserName() + ",\n" +
+                "Your activation link is: http://localhost:3000/createpassword/"+user.getUserName();
+        MailModel mailModel = new MailModel();
+        mailModel.setTo(user.getEmailAddress());
+        mailModel.setSubject("Account varification for "+ user.getUserName());
+        mailModel.setBody(mailBody);
         try{
             usersService.saveUser(user);
-//            emailUtility.sendmail(user.getEmailAddress());
+            mailSender.sendMail(mailModel);
         }
         catch(Exception e){
-            return "Duplicate";
+            return "Duplicate "+ e.getMessage();
         }
         return "New user is added";
     }
@@ -69,7 +77,7 @@ public class UsersController {
     }
 
     @GetMapping("/user/{userid}")
-    private Users getBooks(@PathVariable("userid") Long userid)
+    private Users getUserbyId(@PathVariable("userid") Long userid)
     {
         Users user = usersService.getUserById(userid);
         Role role = new Role();
@@ -77,7 +85,17 @@ public class UsersController {
         user.setRole(role);
         return user;
     }
-    @PatchMapping("/update/{id}")
+    @GetMapping("/username/{userName}")
+    private Users getUserbyUsername(@PathVariable("userName") String userName)
+    {
+        List<Users> user = usersService.getUserByUsername(userName);
+        Users newUser = user.get(0);
+        Role role = new Role();
+        role.setRoleName(newUser.getRole().getRoleName());
+        newUser.setRole(role);
+        return newUser;
+    }
+    @PatchMapping("/updatepasssword/{id}")
     public String updateUserPartially(
             @PathVariable(value = "id") Long userId,
             @RequestBody Users userDetails) {
@@ -87,6 +105,7 @@ public class UsersController {
         userDetails.setPassword(encoded);
         Users user = usersService.getUserById(userId);
         user.setPassword(userDetails.getPassword());
+        user.setStatus("active");
         final Users updatedUser = usersService.saveUser(user);
         return "Password is updated";
     }
