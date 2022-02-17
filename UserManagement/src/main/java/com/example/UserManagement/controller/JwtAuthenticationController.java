@@ -25,6 +25,11 @@ public class JwtAuthenticationController {
     @Autowired
     private JwtUserDetailsService userDetailsService;
 
+    @RequestMapping(value = "/hello", method = RequestMethod.GET)
+    public String firstPage() {
+        return "Hello World";
+    }
+
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest)
             throws Exception {
@@ -37,10 +42,9 @@ public class JwtAuthenticationController {
     private void authenticate(String username, String password) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-        } catch (DisabledException e) {
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new Exception("USER_DISABLED", e);
-        } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
         }
     }
 }
