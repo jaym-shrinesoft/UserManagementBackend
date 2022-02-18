@@ -61,11 +61,11 @@ public class PublicController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest)
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest jwtRequest)
             throws Exception {
-        authenticate(authenticationRequest.getUserName(),authenticationRequest.getPassword());
+        authenticate(jwtRequest.getUserName(),jwtRequest.getPassword());
         final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(authenticationRequest.getUserName());
+                .loadUserByUsername(jwtRequest.getUserName());
         final String token = jwtTokenUtil.generateToken(userDetails);
         return ResponseEntity.ok(new JwtResponse(token));
     }
