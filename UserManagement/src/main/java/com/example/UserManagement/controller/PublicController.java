@@ -8,11 +8,13 @@ import com.example.UserManagement.model.MailModel;
 import com.example.UserManagement.model.Users;
 import com.example.UserManagement.service.JwtUserDetailsService;
 import com.example.UserManagement.service.UsersService;
+import io.jsonwebtoken.Jwt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,13 +63,23 @@ public class PublicController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest jwtRequest)
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody Users users)
             throws Exception {
-        authenticate(jwtRequest.getUserName(),jwtRequest.getPassword());
-        final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(jwtRequest.getUserName());
-        final String token = jwtTokenUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new JwtResponse(token));
+        try{
+            Users user = usersService.getUserByEmail(users.getEmailAddress());
+            JwtRequest jwtRequest = new JwtRequest(user.getUserName(),users.getPassword());
+            authenticate(jwtRequest.getUserName(),jwtRequest.getPassword());
+            final UserDetails userDetails = userDetailsService
+                    .loadUserByUsername(jwtRequest.getUserName());
+            final String token = jwtTokenUtil.generateToken(userDetails);
+            return ResponseEntity.ok(new
+                    JwtResponse(token,user.getId(),user.getUserName(), user.getEmailAddress(),user.getRole().getRoleName()));
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+            throw new UsernameNotFoundException("User not found");
+        }
+
     }
     private void authenticate(String username, String password) throws Exception {
         try {

@@ -42,4 +42,9 @@ public class UsersServiceImpl implements UsersService{
     public List<Users> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
+
+    @Override
+    public Users getUserByEmail(String email) {
+        return userRepository.findByEmail(email).get(0);
+    }
 }
