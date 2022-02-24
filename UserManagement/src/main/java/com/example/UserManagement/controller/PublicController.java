@@ -10,6 +10,7 @@ import com.example.UserManagement.service.JwtUserDetailsService;
 import com.example.UserManagement.service.UsersService;
 import io.jsonwebtoken.Jwt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -90,15 +91,25 @@ public class PublicController {
         }
     }
     @PatchMapping("/updatepasssword/{id}")
-    public String updateUserPassword(
+    public ResponseEntity<String> updateUserPassword(
             @PathVariable(value = "id") Long userId,
             @RequestBody Users userDetails) {
         String encoded = bCryptPasswordEncoder.encode(userDetails.getPassword());
         userDetails.setPassword(encoded);
         Users user = usersService.getUserById(userId);
-        user.setPassword(userDetails.getPassword());
-        user.setStatus("active");
-        final Users updatedUser = usersService.saveUser(user);
-        return "Password is updated";
+        System.out.println(user.getStatus());
+        if(user.getStatus().equals("active")){
+            return new ResponseEntity<>(
+                    "Your password is already created",
+                    HttpStatus.BAD_REQUEST);
+        }
+        else {
+            user.setPassword(userDetails.getPassword());
+            user.setStatus("active");
+            final Users updatedUser = usersService.saveUser(user);
+            return new ResponseEntity<>(
+                    "Your password is updated",
+                    HttpStatus.OK);
+        }
     }
 }
